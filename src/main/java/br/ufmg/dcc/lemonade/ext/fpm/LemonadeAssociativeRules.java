@@ -13,21 +13,21 @@ import scala.collection.Seq;
 import scala.collection.mutable.WrappedArray;
 
 import java.io.Serializable;
+import java.util.List;
 
 /**
  * Python-friendly implementation of association rules algorithm (mllib).
-
- LemonadeAssociativeRules = spark._jvm.br.ufmg.dcc.lemonade.ext.fpm.LemonadeAssociativeRules
- x = CustomAssociativeRules()
- items = [[['a'], 18], [['b'], 35], [['a', 'b'], 12], [['a', 'b', 'c'], 10]]
- df = spark.createDataFrame(items, ['rule', 'freq'])
- df2 = x.run(spark._jsparkSession, df._jdf, 0.6)
-
- from pyspark.sql import DataFrame
-
- df3 = DataFrame(df2, spark)
- df3.show()
-
+ * <p>
+ * LemonadeAssociativeRules = spark._jvm.br.ufmg.dcc.lemonade.ext.fpm.LemonadeAssociativeRules
+ * x = CustomAssociativeRules()
+ * items = [[['a'], 18], [['b'], 35], [['a', 'b'], 12], [['a', 'b', 'c'], 10]]
+ * df = spark.createDataFrame(items, ['rule', 'freq'])
+ * df2 = x.run(spark._jsparkSession, df._jdf, 0.6)
+ * <p>
+ * from pyspark.sql import DataFrame
+ * <p>
+ * df3 = DataFrame(df2, spark)
+ * df3.show()
  */
 @SuppressWarnings("unused")
 public class LemonadeAssociativeRules implements Serializable {
@@ -41,18 +41,21 @@ public class LemonadeAssociativeRules implements Serializable {
      * @return Data frame with rules, organized in three columns:
      * antecedent, consequent and confidence.
      */
-    public Dataset<Row> run(SparkSession spark, Dataset<Row> df, double minConfidence) {
+    public Dataset<Row> run(SparkSession spark, Dataset<Row> df,
+                            double minConfidence) {
 
         JavaRDD<FreqItemset<Object>> freqItemsets = df.javaRDD().map(
                 this::getFreqItemset);
 
-        AssociationRules algorithm = new AssociationRules().setMinConfidence(minConfidence);
+        AssociationRules algorithm = new AssociationRules().setMinConfidence(
+                minConfidence);
 
-        JavaRDD<AssociationRules.Rule<Object>> rules = algorithm.run(freqItemsets);
+        JavaRDD<AssociationRules.Rule<Object>> rules = algorithm.run(
+                freqItemsets);
 
         JavaRDD<Row> resultRdd = rules.map(rule ->
-                RowFactory.create(JavaConverters.collectionAsScalaIterableConverter(rule.javaAntecedent()).asScala().toSeq(),
-                        JavaConverters.collectionAsScalaIterableConverter(rule.javaConsequent()).asScala().toSeq(),
+                RowFactory.create(getObjectSeq(rule.javaAntecedent()),
+                        getObjectSeq(rule.javaConsequent()),
                         rule.confidence()));
 
         StructField field = df.schema().fields()[0];
@@ -66,10 +69,13 @@ public class LemonadeAssociativeRules implements Serializable {
                 .add("confidence", DataTypes.DoubleType);
 
 
-        Dataset<Row> dataFrame = spark.createDataFrame(resultRdd, schema);
-        dataFrame.count();
-        return dataFrame;
+        return spark.createDataFrame(resultRdd, schema);
 
+    }
+
+    private Seq<Object> getObjectSeq(List<Object> list) {
+        return JavaConverters.collectionAsScalaIterableConverter(
+                list).asScala().toSeq();
     }
 
     @SuppressWarnings("unchecked")

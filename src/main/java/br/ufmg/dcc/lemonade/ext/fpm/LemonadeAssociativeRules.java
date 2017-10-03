@@ -32,6 +32,9 @@ import java.util.List;
 @SuppressWarnings("unused")
 public class LemonadeAssociativeRules implements Serializable {
 
+    private int itemsIndex;
+    private int freqIndex;
+
     /**
      * Execute association rules algorithm present in Spark MLlib
      *
@@ -42,7 +45,12 @@ public class LemonadeAssociativeRules implements Serializable {
      * antecedent, consequent and confidence.
      */
     public Dataset<Row> run(SparkSession spark, Dataset<Row> df,
-                            double minConfidence) {
+                            double minConfidence,
+                            String items,
+                            String freq) {
+
+        itemsIndex = df.schema().fieldIndex(items);
+        freqIndex = df.schema().fieldIndex(freq);
 
         JavaRDD<FreqItemset<Object>> freqItemsets = df.javaRDD().map(
                 this::getFreqItemset);
@@ -58,7 +66,7 @@ public class LemonadeAssociativeRules implements Serializable {
                         getObjectSeq(rule.javaConsequent()),
                         rule.confidence()));
 
-        StructField field = df.schema().fields()[0];
+        StructField field = df.schema().fields()[itemsIndex];
         DataType elementType = ((ArrayType) field.dataType()).elementType();
 
         StructType schema = new StructType()
@@ -80,10 +88,11 @@ public class LemonadeAssociativeRules implements Serializable {
 
     @SuppressWarnings("unchecked")
     private FreqItemset<Object> getFreqItemset(Row row) {
-        WrappedArray<Object> itemSet = (WrappedArray<Object>) row.get(0);
+        WrappedArray<Object> itemSet = (WrappedArray<Object>) row.get(itemsIndex);
 
         Object[] tmpItems = new Object[itemSet.length()];
         itemSet.copyToArray(tmpItems);
-        return new FreqItemset<>(tmpItems, (Long) row.get(1));
+        return new FreqItemset<>(tmpItems,
+                ((Number) row.get(freqIndex)).longValue());
     }
 }

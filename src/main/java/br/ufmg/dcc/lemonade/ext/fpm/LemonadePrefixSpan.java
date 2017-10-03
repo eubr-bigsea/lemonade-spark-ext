@@ -27,12 +27,16 @@ public class LemonadePrefixSpan implements Serializable {
      *
      * @param spark Reference to the current Spark Session object
      * @param df    Input data frame
+     * @param minSupport Minimum support
+     * @param maxPatternLength Maximum pattern length
+     * @param items
+     * @param freq
      * @return Data frame with rules, organized in two columns:
      * sequence and frequency.
      * For example, see https://pt.slideshare.net/Akanoo/prefixspan-with-spark
      */
     public Dataset<Row> run(SparkSession spark, Dataset<Row> df, float minSupport,
-                            int maxPatternLength) {
+                            int maxPatternLength, String items, String freq) {
 
         JavaRDD<ArrayList<ArrayList<Object>>> sequences =
                 df.javaRDD().map(this::getSequences);
@@ -56,7 +60,7 @@ public class LemonadePrefixSpan implements Serializable {
         StructType schema = new StructType()
                 .add("sequence", elementSchema,
                         false, Metadata.empty())
-                .add("confidence", DataTypes.LongType);
+                .add("freq", DataTypes.LongType);
 
         JavaRDD<Row> resultRdd = model.freqSequences().toJavaRDD().map(
                 objectFreqSequence -> RowFactory.create(

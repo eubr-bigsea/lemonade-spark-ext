@@ -2,7 +2,7 @@ package br.ufmg.dcc.lemonade.udfs;
 
 import org.apache.spark.sql.api.java.UDF1;
 
-// Remove acentos e remove caracteres fora do range 32-127 
+// Remove acentos e remove caracteres fora do range 32-126 
 // Alguns caracteres dentro do range são removidos
 public class NormalizaNomesUDF implements UDF1<String, String> {
 
@@ -16,7 +16,7 @@ public class NormalizaNomesUDF implements UDF1<String, String> {
         String normalized = java.text.Normalizer.normalize(s, java.text.Normalizer.Form.NFD)
                 .replaceAll("\\p{M}", "");
 
-        String cleaned = normalized.replaceAll("[^\\x20-\\x7F]", "");
+        String cleaned = normalized.replaceAll("[^\\x20-\\x7E]", "");
 
         // Caracteres removidos que estão dentro do range:
         // { } ~ ^ ] [ > = < ; |

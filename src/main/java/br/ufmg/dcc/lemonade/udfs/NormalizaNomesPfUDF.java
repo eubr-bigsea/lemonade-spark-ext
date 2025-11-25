@@ -2,7 +2,7 @@ package br.ufmg.dcc.lemonade.udfs;
 
 import org.apache.spark.sql.api.java.UDF1;
 
-// Remove acentos e remove todos characteres que não são letras entre 'a' e 'z' ou hifen '-'
+// Remove acentos e remove todos characteres que não são letras entre 'a' e 'z' , hifen '-' ou espaços ' '
 public class NormalizaNomesPfUDF implements UDF1<String, String> {
 
     @Override
@@ -15,9 +15,9 @@ public class NormalizaNomesPfUDF implements UDF1<String, String> {
         String normalized = java.text.Normalizer.normalize(s, java.text.Normalizer.Form.NFD)
                 .replaceAll("\\p{M}", "");
    
-        // Remove todos characteres que não são letras entre 'a' e 'z' ou hifen '-'
-        String lettersOnly = normalized.replaceAll("[^\\p{L}-]", "");
+        // Remove todos characteres que não são letras entre 'a' e 'z' , hifen '-' ou espaços ' '
+        String cleaned = normalized.replaceAll("[^\\p{L} -]", "");
 
-        return lettersOnly.toUpperCase();
+        return cleaned.toUpperCase();
     }
 }

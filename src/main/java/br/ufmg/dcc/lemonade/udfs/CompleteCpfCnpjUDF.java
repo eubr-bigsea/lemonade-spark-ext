@@ -1,7 +1,5 @@
 package br.ufmg.dcc.lemonade.udfs;
-
 import org.apache.spark.sql.api.java.UDF3;
-import org.apache.spark.sql.expressions.UserDefinedFunction;
 
 public class CompleteCpfCnpjUDF implements UDF3<String, String, String, String> {
 

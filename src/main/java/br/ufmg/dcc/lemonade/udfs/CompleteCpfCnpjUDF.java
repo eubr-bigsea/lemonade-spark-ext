@@ -85,9 +85,9 @@ public class CompleteCpfCnpjUDF implements UDF3<String, String, String, String> 
                 number_final = second_part + second_digit;
             } else if (clean_number.length() < 9) {
 
-                StringBuilder sb = new StringBuilder(clean_number);
+                StringBuilder sb = new StringBuilder(number);
               
-                for (int i = clean_number.length(); i < 11; i++) {
+                for (int i = number.length(); i < 11; i++) {
                     sb.append(fillChar);
                 }
                 number_final = sb.toString();
@@ -101,8 +101,8 @@ public class CompleteCpfCnpjUDF implements UDF3<String, String, String, String> 
                 number_final = second_part + second_digit;
             } else if (clean_number.length() < 12) {
 
-                StringBuilder sb = new StringBuilder(clean_number);
-                for (int i = clean_number.length(); i < 14; i++) {
+                StringBuilder sb = new StringBuilder(number);
+                for (int i = number.length(); i < 14; i++) {
                     sb.append(fillChar);
                 }
                 number_final = sb.toString();
